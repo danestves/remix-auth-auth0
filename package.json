@@ -1,6 +1,6 @@
 {
-  "name": "remix-auth-strategy-template",
-  "version": "0.0.0",
+  "name": "remix-auth-auth0",
+  "version": "1.0.0",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "scripts": {
@@ -15,7 +15,8 @@
     "remix-auth",
     "auth",
     "authentication",
-    "strategy"
+    "strategy",
+    "auth0"
   ],
   "license": "MIT",
   "files": [
