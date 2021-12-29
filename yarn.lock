@@ -4164,26 +4164,18 @@ regjsparser@^0.7.0:
   dependencies:
     jsesc "~0.5.0"
 
-remix-auth-oauth2@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/remix-auth-oauth2/-/remix-auth-oauth2-1.0.0.tgz#2761595056c5202ffad579a9837f77f024cb2f74"
-  integrity sha512-G88GOjuyEDiZPMUoFuj7PsIGjmQILLL8WsRVQ2U1zIN7OjFz3fTI+E20AUYqGOS5QflYVf66c+t/QVxM7V7Zsg==
+remix-auth-oauth2@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/remix-auth-oauth2/-/remix-auth-oauth2-1.1.0.tgz#247cb8adfef8c3415090833c9f670d98638375b1"
+  integrity sha512-6TtABgU4dBFKq1wqbmkKBEFClGytdS2s+e+byUGT4oPZkurfPhjNoLYTPFkreVHvD9mMDv0Rj/shzq8jgmdhBg==
   dependencies:
-    remix-auth "^3.0.0"
+    remix-auth "^3.1.0"
     uuid "^8.3.2"
 
-remix-auth@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/remix-auth/-/remix-auth-3.0.0.tgz#e03061b2a5c3cb37463787d4f79173d723ac40fe"
-  integrity sha512-oSsLKu2pzGkuadlgDRZraWukXZRxom6Yh3iTPcwyA4DSiIG274rvI+ykh4S2bnHooxKQrwScEiMG74IavcYgAA==
-  dependencies:
-    remix-utils "^2.2.0"
-    uuid "^8.3.2"
-
-remix-auth@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/remix-auth/-/remix-auth-3.0.1.tgz#8f3bb2fb3ad3326ac3af83f3d37ef36a286fa89f"
-  integrity sha512-7LuVly6O/Ecb6uvPHjrWZeznRHV8ecAVWJROGWiWJKhoqrwm0uF6zOV+At4hu8sdA2ub0LZSn1DkfAxkYtbZEQ==
+remix-auth@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/remix-auth/-/remix-auth-3.1.0.tgz#0e2e042dbaed807870c9c31cc34c7c0e32e00af8"
+  integrity sha512-KWBLV5pr0jOCuXjhZp1LHEtG9SR1SuLLzkI9MZuzg/un6P6edA9EKzT5LMQRHGoyiRDZ100wgMj8Dd0mw6950A==
   dependencies:
     remix-utils "^2.2.0"
     uuid "^8.3.2"
