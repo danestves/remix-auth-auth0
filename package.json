@@ -45,7 +45,7 @@
     "eslint-plugin-jest": "25.3.2",
     "eslint-plugin-jest-dom": "4.0.0",
     "eslint-plugin-prettier": "4.0.0",
-    "eslint-plugin-unicorn": "39.0.0",
+    "eslint-plugin-unicorn": "40.0.0",
     "jest": "27.4.5",
     "jest-fetch-mock": "3.0.3",
     "prettier": "2.5.1",
