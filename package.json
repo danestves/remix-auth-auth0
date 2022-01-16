@@ -1,6 +1,6 @@
 {
   "name": "remix-auth-auth0",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "scripts": {
@@ -30,22 +30,22 @@
   },
   "devDependencies": {
     "@babel/core": "7.16.7",
-    "@babel/preset-env": "7.16.7",
+    "@babel/preset-env": "7.16.8",
     "@babel/preset-react": "7.16.7",
     "@babel/preset-typescript": "7.16.7",
     "@remix-run/node": "1.1.1",
     "@remix-run/react": "1.1.1",
     "@remix-run/server-runtime": "1.1.1",
     "@types/jest": "27.4.0",
-    "@typescript-eslint/eslint-plugin": "5.9.0",
-    "@typescript-eslint/parser": "5.9.0",
+    "@typescript-eslint/eslint-plugin": "5.9.1",
+    "@typescript-eslint/parser": "5.9.1",
     "babel-jest": "27.4.6",
-    "eslint": "8.6.0",
+    "eslint": "8.7.0",
     "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-jest": "25.3.4",
+    "eslint-plugin-jest": "25.7.0",
     "eslint-plugin-jest-dom": "4.0.1",
     "eslint-plugin-prettier": "4.0.0",
-    "eslint-plugin-unicorn": "40.0.0",
+    "eslint-plugin-unicorn": "40.1.0",
     "jest": "27.4.7",
     "jest-fetch-mock": "3.0.3",
     "prettier": "2.5.1",
@@ -54,6 +54,6 @@
     "typescript": "4.5.4"
   },
   "dependencies": {
-    "remix-auth-oauth2": "^1.1.0"
+    "remix-auth-oauth2": "^1.2.0"
   }
 }
