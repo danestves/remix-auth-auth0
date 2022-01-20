@@ -1545,6 +1545,18 @@
     set-cookie-parser "^2.4.8"
     source-map "^0.7.3"
 
+"@remix-run/server-runtime@1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@remix-run/server-runtime/-/server-runtime-1.1.3.tgz#06c487a39e812627009e64a006f810393a3e4c90"
+  integrity sha512-Gpl57d42CVqx1gDD+kjjUx7PZqjZgw4i1TWpH37AqOCCBTrNBb2lcl2D0oAZ2ot+wLOT9rDbvIU74GzayDUalw==
+  dependencies:
+    "@types/cookie" "^0.4.0"
+    cookie "^0.4.1"
+    jsesc "^3.0.1"
+    react-router-dom "^6.2.1"
+    set-cookie-parser "^2.4.8"
+    source-map "^0.7.3"
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.3.tgz#3802ddd21a50a949b6721ddd72da36e67e7f1b2d"
