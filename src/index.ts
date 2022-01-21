@@ -92,15 +92,13 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     this.audience = options.audience;
   }
 
-  protected authorizationParams() {
-    const urlSearchParams: Record<string, string> = {
-      scope: this.scope,
-    };
+  protected authorizationParams(params: URLSearchParams): URLSearchParams {
+    params.set("scope", this.scope);
     if (this.audience) {
-      urlSearchParams.audience = this.audience;
+      params.set("audience", this.audience);
     }
 
-    return new URLSearchParams(urlSearchParams);
+    return new URLSearchParams(params);
   }
 
   protected async userProfile(accessToken: string): Promise<Auth0Profile> {
