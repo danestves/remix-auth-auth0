@@ -95,7 +95,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
   protected authorizationParams(params: URLSearchParams): URLSearchParams {
     params.set("scope", this.scope);
     if (this.audience) params.set("audience", this.audience);
-    return params
+    return params;
   }
 
   protected async userProfile(accessToken: string): Promise<Auth0Profile> {
