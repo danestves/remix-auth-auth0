@@ -1,5 +1,5 @@
 // Dependencies
-import { createCookieSessionStorage } from "@remix-run/server-runtime";
+import { createCookieSessionStorage } from "@remix-run/node";
 
 // Internals
 import { Auth0Strategy } from "../src";
