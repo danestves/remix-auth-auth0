@@ -25,7 +25,7 @@
     "README.md"
   ],
   "peerDependencies": {
-    "remix-auth": "^3.2.2"
+    "remix-auth": "^3.x"
   },
   "devDependencies": {
     "@babel/core": "7.18.9",
