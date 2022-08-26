@@ -137,4 +137,36 @@ describe(Auth0Strategy, () => {
       expect(redirectUrl.searchParams.get("audience")).toBe("SOME_AUDIENCE");
     }
   });
+
+  test("should allow changing the organization", async () => {
+    let strategy = new Auth0Strategy(
+      {
+        domain: "test.fake.auth0.com",
+        clientID: "CLIENT_ID",
+        clientSecret: "CLIENT_SECRET",
+        callbackURL: "https://example.app/callback",
+        scope: "custom",
+        audience: "SOME_AUDIENCE",
+        organization: "SOME_ORG",
+      },
+      verify
+    );
+
+    let request = new Request("https://example.app/auth/auth0");
+
+    try {
+      await strategy.authenticate(request, sessionStorage, {
+        sessionKey: "user",
+      });
+    } catch (error) {
+      if (!(error instanceof Response)) throw error;
+      let location = error.headers.get("Location");
+
+      if (!location) throw new Error("No redirect header");
+
+      let redirectUrl = new URL(location);
+
+      expect(redirectUrl.searchParams.get("organization")).toBe("SOME_ORG");
+    }
+  });
 });
