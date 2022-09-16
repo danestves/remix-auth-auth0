@@ -14,6 +14,7 @@ export interface Auth0StrategyOptions {
   scope?: string;
   audience?: string;
   organization?: string;
+  screenHint?: "signup";
 }
 
 export interface Auth0ExtraParams extends Record<string, string | number> {
@@ -70,6 +71,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
   private scope: string;
   private audience?: string;
   private organization?: string;
+  private screenHint?: string;
 
   constructor(
     options: Auth0StrategyOptions,
@@ -93,12 +95,14 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     this.scope = options.scope || "openid profile email";
     this.audience = options.audience;
     this.organization = options.organization;
+    this.screenHint = options.screenHint;
   }
 
   protected authorizationParams(params: URLSearchParams): URLSearchParams {
     params.set("scope", this.scope);
     if (this.audience) params.set("audience", this.audience);
     if (this.organization) params.set("organization", this.organization);
+    if (this.screenHint) params.set("screen_hint", this.screenHint);
     return params;
   }
 
