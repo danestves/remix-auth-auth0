@@ -57,7 +57,7 @@ export default function Login() {
 
 ```tsx
 // app/routes/auth/auth0.tsx
-import type { ActionFunction, LoaderFunction } from "remix";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 
 import { authenticator } from "~/utils/auth.server";
 
@@ -70,7 +70,7 @@ export let action: ActionFunction = ({ request }) => {
 
 ```tsx
 // app/routes/auth/auth0/callback.tsx
-import type { ActionFunction, LoaderFunction } from "remix";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 
 import { authenticator } from "~/utils/auth.server";
 
@@ -82,7 +82,31 @@ export let loader: LoaderFunction = ({ request }) => {
 };
 ```
 
-#### Link directly to signup
+```tsx
+import type { ActionFunction } from "@remix-run/node";
+
+import { redirect } from "@remix-run/node";
+
+import { destroySession, getSession } from "~/utils/auth.server";
+
+export const action: ActionFunction = async ({ request }) => {
+  const session = await getSession(request.headers.get("Cookie"));
+  const logoutURL = new URL(process.env.AUTH0_LOGOUT_URL);
+
+  logoutURL.searchParams.set("client_id", process.env.AUTH0_CLIENT_ID);
+  logoutURL.searchParams.set("returnTo", process.env.AUTH0_RETURN_TO_URL);
+
+  return redirect(logoutURL.toString(), {
+    headers: {
+      "Set-Cookie": await destroySession(session),
+    },
+  });
+};
+```
+
+## Advanced Usage
+
+### Link directly to signup
 
 ```tsx
 // app/routes/register.tsx
