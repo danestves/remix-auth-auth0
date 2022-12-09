@@ -16,47 +16,40 @@ export interface Auth0StrategyOptions {
   organization?: string;
 }
 
-export interface Auth0ExtraParams extends Record<string, string | number> {
-  id_token: string;
+export interface Auth0ExtraParams extends Record<string, unknown> {
+  id_token?: string;
   scope: string;
-  expires_in: 86_400;
+  expires_in: number;
   token_type: "Bearer";
 }
 
+interface Auth0UserInfo {
+  sub?: string;
+  name?: string;
+  given_name?: string;
+  family_name?: string;
+  middle_name?: string;
+  nickname?: string;
+  preferred_username?: string;
+  profile?: string;
+  picture?: string;
+  website?: string;
+  email?: string;
+  email_verified?: boolean;
+  gender?: string;
+  birthdate?: string;
+  zoneinfo?: string;
+  locale?: string;
+  phone_number?: string;
+  phone_number_verified?: boolean;
+  address?: {
+    country?: string;
+  };
+  updated_at?: string;
+}
+
 export interface Auth0Profile extends OAuth2Profile {
-  id: string;
-  displayName: string;
-  name: {
-    familyName: string;
-    givenName: string;
-    middleName: string;
-  };
-  emails: [{ value: string }];
-  photos: [{ value: string }];
-  _json: {
-    sub: string;
-    name: string;
-    given_name: string;
-    family_name: string;
-    middle_name: string;
-    nickname: string;
-    preferred_username: string;
-    profile: string;
-    picture: string;
-    website: string;
-    email: string;
-    email_verified: boolean;
-    gender: string;
-    birthdate: string;
-    zoneinfo: string;
-    locale: string;
-    phone_number: string;
-    phone_number_verified: boolean;
-    address: {
-      country: string;
-    };
-    updated_at: string;
-  };
+  _json?: Auth0UserInfo;
 }
 
 export class Auth0Strategy<User> extends OAuth2Strategy<
@@ -70,6 +63,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
   private scope: string;
   private audience?: string;
   private organization?: string;
+  private fetchProfile: boolean;
 
   constructor(
     options: Auth0StrategyOptions,
@@ -93,6 +87,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     this.scope = options.scope || "openid profile email";
     this.audience = options.audience;
     this.organization = options.organization;
+    this.fetchProfile = /(^| )openid($| )/.test(this.scope);
   }
 
   protected authorizationParams(params: URLSearchParams): URLSearchParams {
@@ -103,24 +98,52 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
   }
 
   protected async userProfile(accessToken: string): Promise<Auth0Profile> {
+    let profile: Auth0Profile = {
+      provider: "auth0",
+    };
+
+    if (!this.fetchProfile) {
+      return profile;
+    }
+
     let response = await fetch(this.userInfoURL, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    let data: Auth0Profile["_json"] = await response.json();
+    let data: Auth0UserInfo = await response.json();
 
-    let profile: Auth0Profile = {
-      provider: "auth0",
-      displayName: data.name,
-      id: data.sub,
-      name: {
-        familyName: data.family_name,
-        givenName: data.given_name,
-        middleName: data.middle_name,
-      },
-      emails: [{ value: data.email }],
-      photos: [{ value: data.picture }],
-      _json: data,
-    };
+    profile._json = data;
+
+    if (data.sub) {
+      profile.id = data.sub;
+    }
+
+    if (data.name) {
+      profile.displayName = data.name;
+    }
+
+    if (data.family_name || data.given_name || data.middle_name) {
+      profile.name = {};
+
+      if (data.family_name) {
+        profile.name.familyName = data.family_name;
+      }
+
+      if (data.given_name) {
+        profile.name.givenName = data.given_name;
+      }
+
+      if (data.middle_name) {
+        profile.name.middleName = data.middle_name;
+      }
+    }
+
+    if (data.email) {
+      profile.emails = [{ value: data.email }];
+    }
+
+    if (data.picture) {
+      profile.photos = [{ value: data.picture }];
+    }
 
     return profile;
   }

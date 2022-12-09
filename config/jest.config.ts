@@ -7,6 +7,7 @@ const config: Config.InitialOptions = {
   verbose: Boolean(process.env.CI),
   rootDir: path.resolve("."),
   collectCoverageFrom: ["<rootDir>/src/**/*.ts"],
+  resetMocks: false,
   setupFilesAfterEnv: ["<rootDir>/config/jest/setup.ts"],
   testMatch: ["<rootDir>/test/**/*.test.ts"],
   transform: {
