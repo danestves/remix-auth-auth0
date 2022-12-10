@@ -1,8 +1,11 @@
 // Dependencies
 import { createCookieSessionStorage } from "@remix-run/node";
+import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
 
 // Internals
-import { Auth0Strategy } from "../src";
+import { Auth0Profile, Auth0Strategy } from "../src";
+
+enableFetchMocks();
 
 describe(Auth0Strategy, () => {
   let verify = jest.fn();
@@ -13,6 +16,7 @@ describe(Auth0Strategy, () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    fetchMock.resetMocks();
   });
 
   test("should allow changing the scope", async () => {
@@ -168,5 +172,217 @@ describe(Auth0Strategy, () => {
 
       expect(redirectUrl.searchParams.get("organization")).toBe("SOME_ORG");
     }
+  });
+
+  test("should not fetch user profile when openid scope is not present", async () => {
+    let strategy = new Auth0Strategy(
+      {
+        domain: "test.fake.auth0.com",
+        clientID: "CLIENT_ID",
+        clientSecret: "CLIENT_SECRET",
+        callbackURL: "https://example.app/callback",
+        scope: "custom",
+      },
+      verify
+    );
+
+    let session = await sessionStorage.getSession();
+    session.set("oauth2:state", "random-state");
+
+    let request = new Request(
+      "https://example.com/callback?state=random-state&code=random-code",
+      {
+        headers: { cookie: await sessionStorage.commitSession(session) },
+      }
+    );
+
+    fetchMock.once(
+      JSON.stringify({
+        access_token: "access token",
+        scope: "custom",
+        expires_in: 86_400,
+        token_type: "Bearer",
+      })
+    );
+
+    let context = { test: "some context" };
+
+    await strategy.authenticate(request, sessionStorage, {
+      sessionKey: "user",
+      context,
+    });
+
+    expect(verify).toHaveBeenLastCalledWith({
+      accessToken: "access token",
+      refreshToken: undefined,
+      extraParams: {
+        scope: "custom",
+        expires_in: 86_400,
+        token_type: "Bearer",
+      },
+      profile: {
+        provider: "auth0",
+      },
+      context,
+    });
+  });
+
+  test("should fetch minimal user profile when only openid scope is present", async () => {
+    let strategy = new Auth0Strategy(
+      {
+        domain: "test.fake.auth0.com",
+        clientID: "CLIENT_ID",
+        clientSecret: "CLIENT_SECRET",
+        callbackURL: "https://example.app/callback",
+        scope: "openid",
+      },
+      verify
+    );
+
+    let session = await sessionStorage.getSession();
+    session.set("oauth2:state", "random-state");
+
+    let request = new Request(
+      "https://example.com/callback?state=random-state&code=random-code",
+      {
+        headers: { cookie: await sessionStorage.commitSession(session) },
+      }
+    );
+
+    let userInfo: Auth0Profile["_json"] = {
+      sub: "subject",
+    };
+
+    fetchMock
+      .once(
+        JSON.stringify({
+          access_token: "access token",
+          id_token: "id token",
+          scope: "openid",
+          expires_in: 86_400,
+          token_type: "Bearer",
+        })
+      )
+      .once(JSON.stringify(userInfo));
+
+    let context = { test: "some context" };
+
+    await strategy.authenticate(request, sessionStorage, {
+      sessionKey: "user",
+      context,
+    });
+
+    const profile: Auth0Profile = {
+      provider: "auth0",
+      _json: userInfo,
+      id: "subject",
+    };
+
+    expect(verify).toHaveBeenLastCalledWith({
+      accessToken: "access token",
+      refreshToken: undefined,
+      extraParams: {
+        id_token: "id token",
+        scope: "openid",
+        expires_in: 86_400,
+        token_type: "Bearer",
+      },
+      profile,
+      context,
+    });
+  });
+
+  test("should fetch full user profile when openid, profile, and email scopes are present", async () => {
+    let strategy = new Auth0Strategy(
+      {
+        domain: "test.fake.auth0.com",
+        clientID: "CLIENT_ID",
+        clientSecret: "CLIENT_SECRET",
+        callbackURL: "https://example.app/callback",
+        scope: "openid profile email",
+      },
+      verify
+    );
+
+    let session = await sessionStorage.getSession();
+    session.set("oauth2:state", "random-state");
+
+    let request = new Request(
+      "https://example.com/callback?state=random-state&code=random-code",
+      {
+        headers: { cookie: await sessionStorage.commitSession(session) },
+      }
+    );
+
+    let userInfo: Auth0Profile["_json"] = {
+      sub: "248289761001",
+      name: "Jane Josephine Doe",
+      given_name: "Jane",
+      family_name: "Doe",
+      middle_name: "Josephine",
+      nickname: "JJ",
+      preferred_username: "j.doe",
+      profile: "http://exampleco.com/janedoe",
+      picture: "http://exampleco.com/janedoe/me.jpg",
+      website: "http://exampleco.com",
+      email: "janedoe@exampleco.com",
+      email_verified: true,
+      gender: "female",
+      birthdate: "1972-03-31",
+      zoneinfo: "America/Los_Angeles",
+      locale: "en-US",
+      phone_number: "+1 (111) 222-3434",
+      phone_number_verified: false,
+      address: {
+        country: "us",
+      },
+      updated_at: "1556845729",
+    };
+
+    fetchMock
+      .once(
+        JSON.stringify({
+          access_token: "access token",
+          id_token: "id token",
+          scope: "openid profile email",
+          expires_in: 86_400,
+          token_type: "Bearer",
+        })
+      )
+      .once(JSON.stringify(userInfo));
+
+    let context = { test: "some context" };
+
+    await strategy.authenticate(request, sessionStorage, {
+      sessionKey: "user",
+      context,
+    });
+
+    const profile: Auth0Profile = {
+      provider: "auth0",
+      _json: userInfo,
+      id: "248289761001",
+      displayName: "Jane Josephine Doe",
+      name: {
+        familyName: "Doe",
+        givenName: "Jane",
+        middleName: "Josephine",
+      },
+      emails: [{ value: "janedoe@exampleco.com" }],
+      photos: [{ value: "http://exampleco.com/janedoe/me.jpg" }],
+    };
+
+    expect(verify).toHaveBeenLastCalledWith({
+      accessToken: "access token",
+      refreshToken: undefined,
+      extraParams: {
+        id_token: "id token",
+        scope: "openid profile email",
+        expires_in: 86_400,
+        token_type: "Bearer",
+      },
+      profile,
+      context,
+    });
   });
 });
