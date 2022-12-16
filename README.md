@@ -57,24 +57,24 @@ export default function Login() {
 
 ```tsx
 // app/routes/auth/auth0.tsx
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { ActionArgs } from "@remix-run/node";
 
 import { authenticator } from "~/utils/auth.server";
 
-export let loader: LoaderFunction = () => redirect("/login");
+export let loader = () => redirect("/login");
 
-export let action: ActionFunction = ({ request }) => {
+export let action = ({ request }: ActionArgs) => {
   return authenticator.authenticate("auth0", request);
 };
 ```
 
 ```tsx
 // app/routes/auth/auth0/callback.tsx
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 
 import { authenticator } from "~/utils/auth.server";
 
-export let loader: LoaderFunction = ({ request }) => {
+export let loader = ({ request }: LoaderArgs) => {
   return authenticator.authenticate("auth0", request, {
     successRedirect: "/dashboard",
     failureRedirect: "/login",
@@ -83,13 +83,13 @@ export let loader: LoaderFunction = ({ request }) => {
 ```
 
 ```tsx
-import type { ActionFunction } from "@remix-run/node";
+import type { ActionArgs } from "@remix-run/node";
 
 import { redirect } from "@remix-run/node";
 
 import { destroySession, getSession } from "~/utils/auth.server";
 
-export const action: ActionFunction = async ({ request }) => {
+export const action = async ({ request }: ActionArgs) => {
   const session = await getSession(request.headers.get("Cookie"));
   const logoutURL = new URL(process.env.AUTH0_LOGOUT_URL);
 
