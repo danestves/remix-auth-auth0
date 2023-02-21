@@ -174,6 +174,39 @@ describe(Auth0Strategy, () => {
     }
   });
 
+  test("should allow setting the connection type", async () => {
+    let strategy = new Auth0Strategy(
+      {
+        domain: "test.fake.auth0.com",
+        clientID: "CLIENT_ID",
+        clientSecret: "CLIENT_SECRET",
+        callbackURL: "https://example.app/callback",
+        scope: "custom",
+        audience: "SOME_AUDIENCE",
+        organization: "SOME_ORG",
+        connection: "email",
+      },
+      verify
+    );
+
+    let request = new Request("https://example.app/auth/auth0");
+
+    try {
+      await strategy.authenticate(request, sessionStorage, {
+        sessionKey: "user",
+      });
+    } catch (error) {
+      if (!(error instanceof Response)) throw error;
+      let location = error.headers.get("Location");
+
+      if (!location) throw new Error("No redirect header");
+
+      let redirectUrl = new URL(location);
+
+      expect(redirectUrl.searchParams.get("connection")).toBe("email");
+    }
+  });
+
   test("should not fetch user profile when openid scope is not present", async () => {
     let strategy = new Auth0Strategy(
       {
