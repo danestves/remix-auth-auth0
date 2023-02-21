@@ -14,6 +14,7 @@ export interface Auth0StrategyOptions {
   scope?: string;
   audience?: string;
   organization?: string;
+  connection?: string;
 }
 
 export interface Auth0ExtraParams extends Record<string, unknown> {
@@ -63,6 +64,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
   private scope: string;
   private audience?: string;
   private organization?: string;
+  private connection?: string;
   private fetchProfile: boolean;
 
   constructor(
@@ -87,6 +89,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     this.scope = options.scope || "openid profile email";
     this.audience = options.audience;
     this.organization = options.organization;
+    this.connection = options.connection;
     this.fetchProfile = /(^| )openid($| )/.test(this.scope);
   }
 
@@ -94,6 +97,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     params.set("scope", this.scope);
     if (this.audience) params.set("audience", this.audience);
     if (this.organization) params.set("organization", this.organization);
+    if (this.connection) params.set("connection", this.connection);
     return params;
   }
 
