@@ -83,6 +83,7 @@ export let loader = ({ request }: LoaderArgs) => {
 ```
 
 ```tsx
+// app/routes/auth/logout.ts
 import type { ActionArgs } from "@remix-run/node";
 
 import { redirect } from "@remix-run/node";
