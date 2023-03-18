@@ -47,10 +47,12 @@ interface Auth0UserInfo {
     country?: string;
   };
   updated_at?: string;
+  org_id?: string;
 }
 
 export interface Auth0Profile extends OAuth2Profile {
   _json?: Auth0UserInfo;
+  organizationId?: string;
 }
 
 export class Auth0Strategy<User> extends OAuth2Strategy<
@@ -147,6 +149,10 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
 
     if (data.picture) {
       profile.photos = [{ value: data.picture }];
+    }
+
+    if (data.org_id) {
+      profile.organizationId = data.org_id;
     }
 
     return profile;
