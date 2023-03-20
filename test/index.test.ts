@@ -366,6 +366,7 @@ describe(Auth0Strategy, () => {
       locale: "en-US",
       phone_number: "+1 (111) 222-3434",
       phone_number_verified: false,
+      org_id: "some-auth0-organization-id",
       address: {
         country: "us",
       },
@@ -403,6 +404,7 @@ describe(Auth0Strategy, () => {
       },
       emails: [{ value: "janedoe@exampleco.com" }],
       photos: [{ value: "http://exampleco.com/janedoe/me.jpg" }],
+      organizationId: "some-auth0-organization-id",
     };
 
     expect(verify).toHaveBeenLastCalledWith({
