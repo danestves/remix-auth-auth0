@@ -1,15 +1,6 @@
 {
   "name": "remix-auth-auth0",
   "version": "1.8.1",
-  "main": "./build/index.js",
-  "types": "./build/index.d.ts",
-  "scripts": {
-    "build": "tsc --project tsconfig.json",
-    "typecheck": "tsc --project tsconfig.json --noEmit",
-    "lint": "eslint --ext .ts,.tsx src/",
-    "test": "jest --config=config/jest.config.ts --passWithNoTests",
-    "coverage": "npm run test -- --coverage"
-  },
   "keywords": [
     "remix",
     "remix-auth",
@@ -19,14 +10,23 @@
     "auth0"
   ],
   "license": "MIT",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
   "files": [
     "build",
     "package.json",
     "README.md"
   ],
-  "peerDependencies": {
-    "@remix-run/server-runtime": "1.x",
-    "remix-auth": "3.x"
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "coverage": "npm run test -- --coverage",
+    "lint": "eslint --ext .ts,.tsx src/",
+    "prepare": "npm run build",
+    "test": "jest --config=config/jest.config.ts --passWithNoTests",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "remix-auth-oauth2": "1.10.0"
   },
   "devDependencies": {
     "@babel/core": "7.23.2",
@@ -53,7 +53,8 @@
     "ts-node": "10.9.1",
     "typescript": "5.2.2"
   },
-  "dependencies": {
-    "remix-auth-oauth2": "1.10.0"
+  "peerDependencies": {
+    "@remix-run/server-runtime": "1.x",
+    "remix-auth": "3.x"
   }
 }
