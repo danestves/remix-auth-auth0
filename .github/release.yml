@@ -1,14 +1,17 @@
 changelog:
   categories:
-    - title: Documentation Changes 📃
+    - title: Documentation Changes
       labels:
-        - docs
-    - title: Features 🎉
+        - documentation
+    - title: New Features
       labels:
-        - feat
-    - title: Bug Fixes 🐛
+        - enhancement
+    - title: Bug Fixes
       labels:
-        - fix
-    - title: Other Changes 🤷‍♂️
+        - bug
+    - title: Dependency Updates
+      labels:
+        - dependencies
+    - title: Other Changes
       labels:
         - "*"
