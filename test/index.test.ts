@@ -1,15 +1,20 @@
-// Dependencies
 import { createCookieSessionStorage } from "@remix-run/node";
+import { AuthenticateOptions } from "remix-auth";
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
 
-// Internals
 import { Auth0Profile, Auth0Strategy } from "../src";
 
 enableFetchMocks();
 
+const BASE_OPTIONS: AuthenticateOptions = {
+  name: "form",
+  sessionKey: "user",
+  sessionErrorKey: "error",
+  sessionStrategyKey: "strategy",
+};
+
 describe(Auth0Strategy, () => {
   let verify = jest.fn();
-  // You will probably need a sessionStorage to test the strategy.
   let sessionStorage = createCookieSessionStorage({
     cookie: { secrets: ["s3cr3t"] },
   });
@@ -34,9 +39,7 @@ describe(Auth0Strategy, () => {
     let request = new Request("https://example.app/auth/auth0");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
       let location = error.headers.get("Location");
@@ -63,9 +66,7 @@ describe(Auth0Strategy, () => {
     let request = new Request("https://example.app/auth/auth0");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
       let location = error.headers.get("Location");
@@ -94,9 +95,7 @@ describe(Auth0Strategy, () => {
     let request = new Request("https://example.app/auth/auth0");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
 
@@ -127,9 +126,7 @@ describe(Auth0Strategy, () => {
     let request = new Request("https://example.app/auth/auth0");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
       let location = error.headers.get("Location");
@@ -159,9 +156,7 @@ describe(Auth0Strategy, () => {
     let request = new Request("https://example.app/auth/auth0");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
       let location = error.headers.get("Location");
@@ -192,9 +187,7 @@ describe(Auth0Strategy, () => {
     let request = new Request("https://example.app/auth/auth0");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
       let location = error.headers.get("Location");
@@ -241,13 +234,14 @@ describe(Auth0Strategy, () => {
     let context = { test: "some context" };
 
     await strategy.authenticate(request, sessionStorage, {
-      sessionKey: "user",
+      ...BASE_OPTIONS,
       context,
     });
 
     expect(verify).toHaveBeenLastCalledWith({
       accessToken: "access token",
       refreshToken: undefined,
+      request,
       extraParams: {
         scope: "custom",
         expires_in: 86_400,
@@ -301,7 +295,7 @@ describe(Auth0Strategy, () => {
     let context = { test: "some context" };
 
     await strategy.authenticate(request, sessionStorage, {
-      sessionKey: "user",
+      ...BASE_OPTIONS,
       context,
     });
 
@@ -314,6 +308,7 @@ describe(Auth0Strategy, () => {
     expect(verify).toHaveBeenLastCalledWith({
       accessToken: "access token",
       refreshToken: undefined,
+      request,
       extraParams: {
         id_token: "id token",
         scope: "openid",
@@ -389,7 +384,7 @@ describe(Auth0Strategy, () => {
     let context = { test: "some context" };
 
     await strategy.authenticate(request, sessionStorage, {
-      sessionKey: "user",
+      ...BASE_OPTIONS,
       context,
     });
 
@@ -412,6 +407,7 @@ describe(Auth0Strategy, () => {
     expect(verify).toHaveBeenLastCalledWith({
       accessToken: "access token",
       refreshToken: undefined,
+      request,
       extraParams: {
         id_token: "id token",
         scope: "openid profile email",

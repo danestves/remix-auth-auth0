@@ -1,4 +1,3 @@
-// Dependencies
 import {
   OAuth2Profile,
   OAuth2Strategy,
@@ -11,10 +10,21 @@ export interface Auth0StrategyOptions {
   clientID: string;
   clientSecret: string;
   callbackURL: string;
-  scope?: string;
+  scope?: Auth0Scope[] | string;
   audience?: string;
   organization?: string;
   connection?: string;
+}
+
+/**
+ * @see https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes#standard-claims
+ */
+export type Auth0Scope = "openid" | "profile" | "email" | string;
+
+export interface Auth0Profile extends OAuth2Profile {
+  _json?: Auth0UserInfo;
+  organizationId?: string;
+  organizationName?: string;
 }
 
 export interface Auth0ExtraParams extends Record<string, unknown> {
@@ -51,21 +61,19 @@ interface Auth0UserInfo {
   org_name?: string;
 }
 
-export interface Auth0Profile extends OAuth2Profile {
-  _json?: Auth0UserInfo;
-  organizationId?: string;
-  organizationName?: string;
-}
+export const Auth0StrategyDefaultName = "auth0";
+export const Auth0StrategyDefaultScope: Auth0Scope = "openid profile email";
+export const Auth0StrategyScopeSeperator = " ";
 
 export class Auth0Strategy<User> extends OAuth2Strategy<
   User,
   Auth0Profile,
   Auth0ExtraParams
 > {
-  name = "auth0";
+  name = Auth0StrategyDefaultName;
 
   private userInfoURL: string;
-  private scope: string;
+  private scope: Auth0Scope[];
   private audience?: string;
   private organization?: string;
   private connection?: string;
@@ -76,7 +84,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     verify: StrategyVerifyCallback<
       User,
       OAuth2StrategyVerifyParams<Auth0Profile, Auth0ExtraParams>
-    >
+    >,
   ) {
     super(
       {
@@ -86,28 +94,42 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
         clientSecret: options.clientSecret,
         callbackURL: options.callbackURL,
       },
-      verify
+      verify,
     );
 
     this.userInfoURL = `https://${options.domain}/userinfo`;
-    this.scope = options.scope || "openid profile email";
+    this.scope = this.getScope(options.scope);
     this.audience = options.audience;
     this.organization = options.organization;
     this.connection = options.connection;
-    this.fetchProfile = /(^| )openid($| )/.test(this.scope);
+    this.fetchProfile = this.scope
+      .join(Auth0StrategyScopeSeperator)
+      .includes("openid");
   }
 
-  protected authorizationParams(params: URLSearchParams): URLSearchParams {
-    params.set("scope", this.scope);
-    if (this.audience) params.set("audience", this.audience);
-    if (this.organization) params.set("organization", this.organization);
-    if (this.connection) params.set("connection", this.connection);
-    return params;
+  // Allow users the option to pass a scope string, or typed array
+  private getScope(scope: Auth0StrategyOptions["scope"]) {
+    if (!scope) {
+      return [Auth0StrategyDefaultScope];
+    } else if (typeof scope === "string") {
+      return scope.split(Auth0StrategyScopeSeperator) as Auth0Scope[];
+    }
+
+    return scope;
+  }
+
+  protected authorizationParams() {
+    return new URLSearchParams({
+      scope: this.scope.join(Auth0StrategyScopeSeperator),
+      ...(this.audience && { audience: this.audience }),
+      ...(this.organization && { organization: this.organization }),
+      ...(this.connection && { connection: this.connection }),
+    });
   }
 
   protected async userProfile(accessToken: string): Promise<Auth0Profile> {
     let profile: Auth0Profile = {
-      provider: "auth0",
+      provider: Auth0StrategyDefaultName,
     };
 
     if (!this.fetchProfile) {
