@@ -28,7 +28,7 @@ describe(Auth0Strategy, () => {
         callbackURL: "https://example.app/callback",
         scope: "custom",
       },
-      verify
+      verify,
     );
 
     let request = new Request("https://example.app/auth/auth0");
@@ -57,7 +57,7 @@ describe(Auth0Strategy, () => {
         clientSecret: "CLIENT_SECRET",
         callbackURL: "https://example.app/callback",
       },
-      verify
+      verify,
     );
 
     let request = new Request("https://example.app/auth/auth0");
@@ -75,7 +75,7 @@ describe(Auth0Strategy, () => {
       let redirectUrl = new URL(location);
 
       expect(redirectUrl.searchParams.get("scope")).toBe(
-        "openid profile email"
+        "openid profile email",
       );
     }
   });
@@ -88,7 +88,7 @@ describe(Auth0Strategy, () => {
         clientSecret: "CLIENT_SECRET",
         callbackURL: "https://example.app/callback",
       },
-      verify
+      verify,
     );
 
     let request = new Request("https://example.app/auth/auth0");
@@ -121,7 +121,7 @@ describe(Auth0Strategy, () => {
         scope: "custom",
         audience: "SOME_AUDIENCE",
       },
-      verify
+      verify,
     );
 
     let request = new Request("https://example.app/auth/auth0");
@@ -153,7 +153,7 @@ describe(Auth0Strategy, () => {
         audience: "SOME_AUDIENCE",
         organization: "SOME_ORG",
       },
-      verify
+      verify,
     );
 
     let request = new Request("https://example.app/auth/auth0");
@@ -186,7 +186,7 @@ describe(Auth0Strategy, () => {
         organization: "SOME_ORG",
         connection: "email",
       },
-      verify
+      verify,
     );
 
     let request = new Request("https://example.app/auth/auth0");
@@ -216,7 +216,7 @@ describe(Auth0Strategy, () => {
         callbackURL: "https://example.app/callback",
         scope: "custom",
       },
-      verify
+      verify,
     );
 
     let session = await sessionStorage.getSession();
@@ -226,7 +226,7 @@ describe(Auth0Strategy, () => {
       "https://example.com/callback?state=random-state&code=random-code",
       {
         headers: { cookie: await sessionStorage.commitSession(session) },
-      }
+      },
     );
 
     fetchMock.once(
@@ -235,7 +235,7 @@ describe(Auth0Strategy, () => {
         scope: "custom",
         expires_in: 86_400,
         token_type: "Bearer",
-      })
+      }),
     );
 
     let context = { test: "some context" };
@@ -269,7 +269,7 @@ describe(Auth0Strategy, () => {
         callbackURL: "https://example.app/callback",
         scope: "openid",
       },
-      verify
+      verify,
     );
 
     let session = await sessionStorage.getSession();
@@ -279,7 +279,7 @@ describe(Auth0Strategy, () => {
       "https://example.com/callback?state=random-state&code=random-code",
       {
         headers: { cookie: await sessionStorage.commitSession(session) },
-      }
+      },
     );
 
     let userInfo: Auth0Profile["_json"] = {
@@ -294,7 +294,7 @@ describe(Auth0Strategy, () => {
           scope: "openid",
           expires_in: 86_400,
           token_type: "Bearer",
-        })
+        }),
       )
       .once(JSON.stringify(userInfo));
 
@@ -334,7 +334,7 @@ describe(Auth0Strategy, () => {
         callbackURL: "https://example.app/callback",
         scope: "openid profile email",
       },
-      verify
+      verify,
     );
 
     let session = await sessionStorage.getSession();
@@ -344,7 +344,7 @@ describe(Auth0Strategy, () => {
       "https://example.com/callback?state=random-state&code=random-code",
       {
         headers: { cookie: await sessionStorage.commitSession(session) },
-      }
+      },
     );
 
     let userInfo: Auth0Profile["_json"] = {
@@ -367,6 +367,7 @@ describe(Auth0Strategy, () => {
       phone_number: "+1 (111) 222-3434",
       phone_number_verified: false,
       org_id: "some-auth0-organization-id",
+      org_name: "some-auth0-organization-name",
       address: {
         country: "us",
       },
@@ -381,7 +382,7 @@ describe(Auth0Strategy, () => {
           scope: "openid profile email",
           expires_in: 86_400,
           token_type: "Bearer",
-        })
+        }),
       )
       .once(JSON.stringify(userInfo));
 
@@ -405,6 +406,7 @@ describe(Auth0Strategy, () => {
       emails: [{ value: "janedoe@exampleco.com" }],
       photos: [{ value: "http://exampleco.com/janedoe/me.jpg" }],
       organizationId: "some-auth0-organization-id",
+      organizationName: "some-auth0-organization-name",
     };
 
     expect(verify).toHaveBeenLastCalledWith({
