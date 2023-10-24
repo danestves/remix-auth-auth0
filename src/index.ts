@@ -118,13 +118,19 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     return scope;
   }
 
-  protected authorizationParams() {
-    return new URLSearchParams({
-      scope: this.scope.join(Auth0StrategyScopeSeperator),
-      ...(this.audience && { audience: this.audience }),
-      ...(this.organization && { organization: this.organization }),
-      ...(this.connection && { connection: this.connection }),
-    });
+  protected authorizationParams(params: URLSearchParams) {
+    params.set("scope", this.scope.join(Auth0StrategyScopeSeperator));
+    if (this.audience) {
+      params.set("audience", this.audience);
+    }
+    if (this.organization) {
+      params.set("organization", this.organization);
+    }
+    if (this.connection) {
+      params.set("connection", this.connection);
+    }
+
+    return params;
   }
 
   protected async userProfile(accessToken: string): Promise<Auth0Profile> {

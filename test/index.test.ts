@@ -418,4 +418,30 @@ describe(Auth0Strategy, () => {
       context,
     });
   });
+
+  test("should allow additional search params", async () => {
+    let strategy = new Auth0Strategy(
+      {
+        domain: "test.fake.auth0.com",
+        clientID: "CLIENT_ID",
+        clientSecret: "CLIENT_SECRET",
+        callbackURL: "https://example.app/callback",
+      },
+      verify,
+    );
+
+    let request = new Request("https://example.app/auth/auth0?test=1");
+    try {
+      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
+    } catch (error) {
+      if (!(error instanceof Response)) throw error;
+      let location = error.headers.get("Location");
+
+      if (!location) throw new Error("No redirect header");
+
+      let redirectUrl = new URL(location);
+
+      expect(redirectUrl.searchParams.get("test")).toBe("1");
+    }
+  });
 });
