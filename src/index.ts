@@ -13,6 +13,7 @@ export interface Auth0StrategyOptions {
   scope?: Auth0Scope[] | string;
   audience?: string;
   organization?: string;
+  invitation?: string;
   connection?: string;
 }
 
@@ -76,6 +77,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
   private scope: Auth0Scope[];
   private audience?: string;
   private organization?: string;
+  private invitation?: string;
   private connection?: string;
   private fetchProfile: boolean;
 
@@ -101,6 +103,7 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     this.scope = this.getScope(options.scope);
     this.audience = options.audience;
     this.organization = options.organization;
+    this.invitation = options.invitation;
     this.connection = options.connection;
     this.fetchProfile = this.scope
       .join(Auth0StrategyScopeSeperator)
@@ -125,6 +128,9 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     }
     if (this.organization) {
       params.set("organization", this.organization);
+    }
+    if (this.invitation) {
+      params.set("invitation", this.invitation);
     }
     if (this.connection) {
       params.set("connection", this.connection);

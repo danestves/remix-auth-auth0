@@ -169,6 +169,39 @@ describe(Auth0Strategy, () => {
     }
   });
 
+  test("should allow setting an invitation", async () => {
+    let strategy = new Auth0Strategy(
+      {
+        domain: "test.fake.auth0.com",
+        clientID: "CLIENT_ID",
+        clientSecret: "CLIENT_SECRET",
+        callbackURL: "https://example.app/callback",
+        scope: "custom",
+        audience: "SOME_AUDIENCE",
+        organization: "SOME_ORG",
+        invitation: "SOME_INVITATION",
+      },
+      verify,
+    );
+
+    let request = new Request("https://example.app/auth/auth0");
+
+    try {
+      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
+    } catch (error) {
+      if (!(error instanceof Response)) throw error;
+      let location = error.headers.get("Location");
+
+      if (!location) throw new Error("No redirect header");
+
+      let redirectUrl = new URL(location);
+
+      expect(redirectUrl.searchParams.get("invitation")).toBe(
+        "SOME_INVITATION",
+      );
+    }
+  });
+
   test("should allow setting the connection type", async () => {
     let strategy = new Auth0Strategy(
       {
