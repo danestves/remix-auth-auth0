@@ -9,6 +9,11 @@
     "strategy",
     "auth0"
   ],
+  "repository": {
+    "url": "https://github.com/danestves/remix-auth-auth0",
+    "type": "git"
+  },
+  "homepage": "https://github.com/danestves/remix-auth-auth0#readme",
   "license": "MIT",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
