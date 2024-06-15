@@ -36,7 +36,7 @@ let auth0Strategy = new Auth0Strategy(
   async ({ accessToken, refreshToken, extraParams, profile }) => {
     // Get the user data from your DB or API using the tokens and profile
     return User.findOrCreate({ email: profile.emails[0].value });
-  }
+  },
 );
 
 authenticator.use(auth0Strategy);
@@ -56,25 +56,25 @@ export default function Login() {
 ```
 
 ```tsx
-// app/routes/auth/auth0.tsx
-import type { ActionArgs } from "@remix-run/node";
+// app/routes/auth.auth0.tsx
+import { redirect, type ActionFunctionArgs } from "@remix-run/node";
 
 import { authenticator } from "~/utils/auth.server";
 
 export let loader = () => redirect("/login");
 
-export let action = ({ request }: ActionArgs) => {
+export let action = ({ request }: ActionFunctionArgs) => {
   return authenticator.authenticate("auth0", request);
 };
 ```
 
 ```tsx
-// app/routes/auth/auth0/callback.tsx
-import type { LoaderArgs } from "@remix-run/node";
+// app/routes/auth.auth0.callback.tsx
+import { type LoaderFunctionArgs } from "@remix-run/node";
 
 import { authenticator } from "~/utils/auth.server";
 
-export let loader = ({ request }: LoaderArgs) => {
+export let loader = ({ request }: LoaderFunctionArgs) => {
   return authenticator.authenticate("auth0", request, {
     successRedirect: "/dashboard",
     failureRedirect: "/login",
@@ -83,14 +83,12 @@ export let loader = ({ request }: LoaderArgs) => {
 ```
 
 ```tsx
-// app/routes/auth/logout.ts
-import type { ActionArgs } from "@remix-run/node";
-
-import { redirect } from "@remix-run/node";
+// app/routes/auth.logout.ts
+import { redirect, type ActionFunctionArgs } from "@remix-run/node";
 
 import { destroySession, getSession } from "~/utils/auth.server";
 
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const session = await getSession(request.headers.get("Cookie"));
   const logoutURL = new URL(process.env.AUTH0_LOGOUT_URL); // i.e https://YOUR_TENANT.us.auth0.com/v2/logout
 
