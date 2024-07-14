@@ -1,7 +1,7 @@
 import type { Config } from "@jest/types";
 // eslint-disable-next-line unicorn/prefer-node-protocol
 // eslint-disable-next-line unicorn/import-style
-import * as path from "path";
+import path from "path";
 
 const config: Config.InitialOptions = {
   verbose: Boolean(process.env.CI),
@@ -10,6 +10,7 @@ const config: Config.InitialOptions = {
   resetMocks: false,
   setupFilesAfterEnv: ["<rootDir>/config/jest/setup.ts"],
   testMatch: ["<rootDir>/test/**/*.test.ts"],
+  transformIgnorePatterns: ["/node_modules/(?!remix-auth-oauth2)/"],
   transform: {
     "\\.[jt]sx?$": [
       "babel-jest",
