@@ -1,6 +1,6 @@
 name: CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -18,62 +18,11 @@ jobs:
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
 
-      - name: Build
-        run: npm run build
-
-  typecheck:
-    name: Typechecker
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Use Node LTS
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-
-      - name: Install dependencies
-        uses: bahmutov/npm-install@v1
-
       - name: Typecheck
         run: npm run typecheck
-
-  test:
-    name: Unit and Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Use Node LTS
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-
-      - name: Install dependencies
-        uses: bahmutov/npm-install@v1
-
       - name: Test
         run: npm run test -- --ci --coverage --maxWorkers=2
-
-  lint:
-    name: Linter
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Use Node LTS
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-
-      - name: Install dependencies
-        uses: bahmutov/npm-install@v1
-
-      - name: Build
-        run: npm run build
-
       - name: Lint
         run: npm run lint
+      - name: Build
+        run: npm run build
