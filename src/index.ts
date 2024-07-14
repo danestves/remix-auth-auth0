@@ -1,7 +1,8 @@
-import {
+import { OAuth2Strategy } from "remix-auth-oauth2";
+import type {
   OAuth2Profile,
-  OAuth2Strategy,
   OAuth2StrategyVerifyParams,
+  TokenResponseBody,
 } from "remix-auth-oauth2";
 import type { StrategyVerifyCallback } from "remix-auth";
 
@@ -90,11 +91,12 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
   ) {
     super(
       {
-        authorizationURL: `https://${options.domain}/authorize`,
-        tokenURL: `https://${options.domain}/oauth/token`,
-        clientID: options.clientID,
+        authorizationEndpoint: `https://${options.domain}/authorize`,
+        tokenEndpoint: `https://${options.domain}/oauth/token`,
+        tokenRevocationEndpoint: `https://${options.domain}/oauth/revoke`,
+        clientId: options.clientID,
         clientSecret: options.clientSecret,
-        callbackURL: options.callbackURL,
+        redirectURI: options.callbackURL,
       },
       verify,
     );
@@ -123,15 +125,19 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
 
   protected authorizationParams(params: URLSearchParams) {
     params.set("scope", this.scope.join(Auth0StrategyScopeSeperator));
+
     if (this.audience) {
       params.set("audience", this.audience);
     }
+
     if (this.organization) {
       params.set("organization", this.organization);
     }
+
     if (this.invitation) {
       params.set("invitation", this.invitation);
     }
+
     if (this.connection) {
       params.set("connection", this.connection);
     }
@@ -139,8 +145,10 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
     return params;
   }
 
-  protected async userProfile(accessToken: string): Promise<Auth0Profile> {
-    let profile: Auth0Profile = {
+  protected async userProfile({
+    access_token: accessToken,
+  }: TokenResponseBody): Promise<Auth0Profile> {
+    const profile: Auth0Profile = {
       provider: Auth0StrategyDefaultName,
     };
 
@@ -148,10 +156,11 @@ export class Auth0Strategy<User> extends OAuth2Strategy<
       return profile;
     }
 
-    let response = await fetch(this.userInfoURL, {
+    const response = await fetch(this.userInfoURL, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    let data: Auth0UserInfo = await response.json();
+
+    const data: Auth0UserInfo = await response.json();
 
     profile._json = data;
 
