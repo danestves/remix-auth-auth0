@@ -35,7 +35,7 @@ export interface Auth0ExtraParams extends Record<string, unknown> {
   token_type: "Bearer";
 }
 
-interface Auth0UserInfo {
+export interface Auth0UserInfo {
   sub?: string;
   name?: string;
   given_name?: string;
