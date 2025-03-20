@@ -1,16 +1,8 @@
 {
-  "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2019"],
-    "esModuleInterop": true,
-    "moduleResolution": "Node",
-    "module": "CommonJS",
-    "target": "ES2019",
-    "strict": true,
-    "skipLibCheck": true,
-    "declaration": true,
-    "sourceMap": true,
-    "outDir": "./build"
-  },
-  "exclude": ["node_modules"],
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+	"extends": "@total-typescript/tsconfig/tsc/dom/library",
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/**/*.test.ts"],
+	"compilerOptions": {
+		"outDir": "./build"
+	}
 }

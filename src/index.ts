@@ -1,200 +1,255 @@
+import { type SetCookieInit } from "@mjackson/headers";
 import {
-  OAuth2Profile,
-  OAuth2Strategy,
-  OAuth2StrategyVerifyParams,
-} from "remix-auth-oauth2";
-import type { StrategyVerifyCallback } from "remix-auth";
+	Auth0,
+	OAuth2RequestError,
+	type OAuth2Tokens,
+	UnexpectedErrorResponseBodyError,
+	UnexpectedResponseError,
+	generateCodeVerifier,
+	generateState,
+} from "arctic";
+import createDebug from "debug";
+import { Strategy } from "remix-auth/strategy";
 
-export interface Auth0StrategyOptions {
-  domain: string;
-  clientID: string;
-  clientSecret: string;
-  callbackURL: string;
-  scope?: Auth0Scope[] | string;
-  audience?: string;
-  organization?: string;
-  invitation?: string;
-  connection?: string;
-}
+import { redirect } from "./lib/redirect.js";
+import { StateStore } from "./lib/store.js";
 
-/**
- * @see https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes#standard-claims
- */
-export type Auth0Scope = "openid" | "profile" | "email" | string;
+type URLConstructor = ConstructorParameters<typeof URL>[0];
 
-export interface Auth0Profile extends OAuth2Profile {
-  _json?: Auth0UserInfo;
-  organizationId?: string;
-  organizationName?: string;
-}
+const debug = createDebug("Auth0Strategy");
 
-export interface Auth0ExtraParams extends Record<string, unknown> {
-  id_token?: string;
-  scope: string;
-  expires_in: number;
-  token_type: "Bearer";
-}
+export {
+	OAuth2RequestError,
+	UnexpectedErrorResponseBodyError,
+	UnexpectedResponseError,
+};
 
-interface Auth0UserInfo {
-  sub?: string;
-  name?: string;
-  given_name?: string;
-  family_name?: string;
-  middle_name?: string;
-  nickname?: string;
-  preferred_username?: string;
-  profile?: string;
-  picture?: string;
-  website?: string;
-  email?: string;
-  email_verified?: boolean;
-  gender?: string;
-  birthdate?: string;
-  zoneinfo?: string;
-  locale?: string;
-  phone_number?: string;
-  phone_number_verified?: boolean;
-  address?: {
-    country?: string;
-  };
-  updated_at?: string;
-  org_id?: string;
-  org_name?: string;
-}
-
-export const Auth0StrategyDefaultName = "auth0";
-export const Auth0StrategyDefaultScope: Auth0Scope = "openid profile email";
-export const Auth0StrategyScopeSeperator = " ";
-
-export class Auth0Strategy<User> extends OAuth2Strategy<
-  User,
-  Auth0Profile,
-  Auth0ExtraParams
+export class Auth0Strategy<User> extends Strategy<
+	User,
+	Auth0Strategy.VerifyOptions
 > {
-  name = Auth0StrategyDefaultName;
+	name = "auth0";
 
-  private userInfoURL: string;
-  private scope: Auth0Scope[];
-  private audience?: string;
-  private organization?: string;
-  private invitation?: string;
-  private connection?: string;
-  private fetchProfile: boolean;
+	protected client: Auth0;
 
-  constructor(
-    options: Auth0StrategyOptions,
-    verify: StrategyVerifyCallback<
-      User,
-      OAuth2StrategyVerifyParams<Auth0Profile, Auth0ExtraParams>
-    >,
-  ) {
-    super(
-      {
-        authorizationURL: `https://${options.domain}/authorize`,
-        tokenURL: `https://${options.domain}/oauth/token`,
-        clientID: options.clientID,
-        clientSecret: options.clientSecret,
-        callbackURL: options.callbackURL,
-      },
-      verify,
-    );
+	constructor(
+		protected options: Auth0Strategy.ConstructorOptions,
+		verify: Strategy.VerifyFunction<User, Auth0Strategy.VerifyOptions>,
+	) {
+		super(verify);
 
-    this.userInfoURL = `https://${options.domain}/userinfo`;
-    this.scope = this.getScope(options.scope);
-    this.audience = options.audience;
-    this.organization = options.organization;
-    this.invitation = options.invitation;
-    this.connection = options.connection;
-    this.fetchProfile = this.scope
-      .join(Auth0StrategyScopeSeperator)
-      .includes("openid");
-  }
+		this.client = new Auth0(
+			options.domain,
+			options.clientId,
+			options.clientSecret,
+			options.redirectURI.toString(),
+		);
+	}
 
-  // Allow users the option to pass a scope string, or typed array
-  private getScope(scope: Auth0StrategyOptions["scope"]) {
-    if (!scope) {
-      return [Auth0StrategyDefaultScope];
-    } else if (typeof scope === "string") {
-      return scope.split(Auth0StrategyScopeSeperator) as Auth0Scope[];
-    }
+	private get cookieName() {
+		if (typeof this.options.cookie === "string") {
+			return this.options.cookie || "auth0";
+		}
+		return this.options.cookie?.name ?? "auth0";
+	}
 
-    return scope;
-  }
+	private get cookieOptions() {
+		if (typeof this.options.cookie !== "object") return {};
+		return this.options.cookie ?? {};
+	}
 
-  protected authorizationParams(params: URLSearchParams) {
-    params.set("scope", this.scope.join(Auth0StrategyScopeSeperator));
-    if (this.audience) {
-      params.set("audience", this.audience);
-    }
-    if (this.organization) {
-      params.set("organization", this.organization);
-    }
-    if (this.invitation) {
-      params.set("invitation", this.invitation);
-    }
-    if (this.connection) {
-      params.set("connection", this.connection);
-    }
+	override async authenticate(request: Request): Promise<User> {
+		debug("Request URL", request.url);
 
-    return params;
-  }
+		let url = new URL(request.url);
 
-  protected async userProfile(accessToken: string): Promise<Auth0Profile> {
-    let profile: Auth0Profile = {
-      provider: Auth0StrategyDefaultName,
-    };
+		let stateUrl = url.searchParams.get("state");
 
-    if (!this.fetchProfile) {
-      return profile;
-    }
+		if (!stateUrl) {
+			debug("No state found in the URL, redirecting to authorization endpoint");
 
-    let response = await fetch(this.userInfoURL, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    let data: Auth0UserInfo = await response.json();
+			let { state, codeVerifier, url } = this.createAuthorizationURL();
 
-    profile._json = data;
+			debug("State", state);
+			debug("Code verifier", codeVerifier);
 
-    if (data.sub) {
-      profile.id = data.sub;
-    }
+			url.search = this.authorizationParams(
+				url.searchParams,
+				request,
+			).toString();
 
-    if (data.name) {
-      profile.displayName = data.name;
-    }
+			debug("Authorization URL", url.toString());
 
-    if (data.family_name || data.given_name || data.middle_name) {
-      profile.name = {};
+			let store = StateStore.fromRequest(request, this.cookieName);
+			store.set(state, codeVerifier);
 
-      if (data.family_name) {
-        profile.name.familyName = data.family_name;
-      }
+			throw redirect(url.toString(), {
+				headers: {
+					"Set-Cookie": store
+						.toSetCookie(this.cookieName, this.cookieOptions)
+						.toString(),
+				},
+			});
+		}
 
-      if (data.given_name) {
-        profile.name.givenName = data.given_name;
-      }
+		let store = StateStore.fromRequest(request, this.cookieName);
 
-      if (data.middle_name) {
-        profile.name.middleName = data.middle_name;
-      }
-    }
+		if (!store.has()) {
+			throw new ReferenceError("Missing state on cookie.");
+		}
 
-    if (data.email) {
-      profile.emails = [{ value: data.email }];
-    }
+		if (!store.has(stateUrl)) {
+			throw new RangeError("State in URL doesn't match state in cookie.");
+		}
 
-    if (data.picture) {
-      profile.photos = [{ value: data.picture }];
-    }
+		let error = url.searchParams.get("error");
 
-    if (data.org_id) {
-      profile.organizationId = data.org_id;
-    }
+		if (error) {
+			let description = url.searchParams.get("error_description");
+			let uri = url.searchParams.get("error_uri");
+			throw new OAuth2RequestError(error, description, uri, stateUrl);
+		}
 
-    if (data.org_name) {
-      profile.organizationName = data.org_name;
-    }
+		let code = url.searchParams.get("code");
 
-    return profile;
-  }
+		if (!code) throw new ReferenceError("Missing code in the URL");
+
+		let codeVerifier = store.get(stateUrl);
+
+		if (!codeVerifier) {
+			throw new ReferenceError("Missing code verifier on cookie.");
+		}
+
+		debug("Validating authorization code");
+		let tokens = await this.validateAuthorizationCode(code, codeVerifier);
+
+		debug("Verifying the user profile");
+		let user = await this.verify({ request, tokens });
+
+		debug("User authenticated");
+		return user;
+	}
+
+	protected createAuthorizationURL() {
+		let state = generateState();
+		let codeVerifier = generateCodeVerifier();
+
+		let url = this.client.createAuthorizationURL(
+			state,
+			codeVerifier,
+			this.options.scopes ?? [],
+		);
+
+		return { state, codeVerifier, url };
+	}
+
+	protected validateAuthorizationCode(code: string, codeVerifier: string) {
+		return this.client.validateAuthorizationCode(code, codeVerifier);
+	}
+
+	/**
+	 * Return extra parameters to be included in the authorization request.
+	 *
+	 * Some OAuth 2.0 providers allow additional, non-standard parameters to be
+	 * included when requesting authorization.  Since these parameters are not
+	 * standardized by the OAuth 2.0 specification, OAuth 2.0-based authentication
+	 * strategies can override this function in order to populate these
+	 * parameters as required by the provider.
+	 */
+	protected authorizationParams(
+		params: URLSearchParams,
+		request: Request,
+	): URLSearchParams {
+		return new URLSearchParams(params);
+	}
+
+	/**
+	 * Get a new OAuth2 Tokens object using the refresh token once the previous
+	 * access token has expired.
+	 * @param refreshToken The refresh token to use to get a new access token
+	 * @returns The new OAuth2 tokens object
+	 * @example
+	 * ```ts
+	 * let tokens = await strategy.refreshToken(refreshToken);
+	 * console.log(tokens.accessToken());
+	 * ```
+	 */
+	public refreshToken(refreshToken: string) {
+		return this.client.refreshAccessToken(refreshToken);
+	}
+
+	/**
+	 * Users the token revocation endpoint of the identity provider to revoke the
+	 * access token and make it invalid.
+	 *
+	 * @param token The access token to revoke
+	 * @example
+	 * ```ts
+	 * // Get it from where you stored it
+	 * let accessToken = await getAccessToken();
+	 * await strategy.revokeToken(tokens.access_token);
+	 * ```
+	 */
+	public revokeToken(token: string) {
+		return this.client.revokeToken(token);
+	}
+}
+
+export namespace Auth0Strategy {
+	export interface VerifyOptions {
+		/** The request that triggered the verification flow */
+		request: Request;
+		/** The OAuth2 tokens retrivied from the identity provider */
+		tokens: OAuth2Tokens;
+	}
+
+	export interface ConstructorOptions {
+		/**
+		 * The name of the cookie used to keep state and code verifier around.
+		 *
+		 * The OAuth2 flow requires generating a random state and code verifier, and
+		 * then checking that the state matches when the user is redirected back to
+		 * the application. This is done to prevent CSRF attacks.
+		 *
+		 * The state and code verifier are stored in a cookie, and this option
+		 * allows you to customize the name of that cookie if needed.
+		 * @default "auth0"
+		 */
+		cookie?: string | (Omit<SetCookieInit, "value"> & { name: string });
+
+		/**
+		 * The domain of the Identity Provider you're using to authenticate users.
+		 */
+		domain: string;
+
+		/**
+		 * This is the Client ID of your application, provided to you by the Identity
+		 * Provider you're using to authenticate users.
+		 */
+		clientId: string;
+
+		/**
+		 * This is the Client Secret of your application, provided to you by the
+		 * Identity Provider you're using to authenticate users.
+		 */
+		clientSecret: string;
+
+		/**
+		 * The URL of your application where the Identity Provider will redirect the
+		 * user after they've logged in or authorized your application.
+		 */
+		redirectURI: URLConstructor;
+
+		/**
+		 * The scopes you want to request from the Identity Provider, this is a list
+		 * of strings that represent the permissions you want to request from the
+		 * user.
+		 */
+		scopes?: Scope[];
+	}
+
+	/**
+	 * @see https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes#standard-claims
+	 */
+	export type Scope = "openid" | "profile" | "email" | string;
 }
