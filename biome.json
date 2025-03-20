@@ -1,50 +1,48 @@
 {
-    "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-    "formatter": {
-        "enabled": true
-    },
-    "linter": {
-        "enabled": true,
-        "rules": {
-            "correctness": {
-                "useHookAtTopLevel": "error"
-            },
-            "performance": {
-                "noBarrelFile": "error",
-                "noReExportAll": "error"
-            },
-            "recommended": true,
-            "style": {
-                "noDefaultExport": "error",
-                "noNegationElse": "error",
-                "useConst": "off",
-                "useExportType": "off",
-                "useImportType": "off"
-            },
-            "suspicious": {
-                "noConsoleLog": "warn",
-                "noEmptyBlockStatements": "warn",
-                "noSkippedTests": "error"
-            }
-        }
-    },
-    "organizeImports": {
-        "enabled": true
-    },
-    "overrides": [
-        {
-            "formatter": {
-                "indentStyle": "tab"
-            },
-            "include": [
-                "**/*.md"
-            ]
-        }
-    ],
-    "vcs": {
-        "clientKind": "git",
-        "defaultBranch": "main",
-        "enabled": true,
-        "useIgnoreFile": true
-    }
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"formatter": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"correctness": {
+				"useHookAtTopLevel": "error"
+			},
+			"performance": {
+				"noBarrelFile": "error",
+				"noReExportAll": "error"
+			},
+			"recommended": true,
+			"style": {
+				"noDefaultExport": "error",
+				"noNegationElse": "error",
+				"useConst": "off",
+				"useExportType": "off",
+				"useImportType": "off"
+			},
+			"suspicious": {
+				"noConsoleLog": "warn",
+				"noEmptyBlockStatements": "warn",
+				"noSkippedTests": "error"
+			}
+		}
+	},
+	"organizeImports": {
+		"enabled": true
+	},
+	"overrides": [
+		{
+			"formatter": {
+				"indentStyle": "tab"
+			},
+			"include": ["**/*.md"]
+		}
+	],
+	"vcs": {
+		"clientKind": "git",
+		"defaultBranch": "main",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
 }

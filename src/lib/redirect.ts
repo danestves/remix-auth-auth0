@@ -1,14 +1,14 @@
 export function redirect(url: string, init: ResponseInit | number = 302) {
-  let responseInit = init;
+	let responseInit = init;
 
-  if (typeof responseInit === "number") {
-    responseInit = { status: responseInit };
-  } else if (responseInit.status === undefined) {
-    responseInit.status = 302;
-  }
+	if (typeof responseInit === "number") {
+		responseInit = { status: responseInit };
+	} else if (responseInit.status === undefined) {
+		responseInit.status = 302;
+	}
 
-  let headers = new Headers(responseInit.headers);
-  headers.set("Location", url);
+	let headers = new Headers(responseInit.headers);
+	headers.set("Location", url);
 
-  return new Response(null, { ...responseInit, headers });
+	return new Response(null, { ...responseInit, headers });
 }
