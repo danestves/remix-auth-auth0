@@ -1,480 +1,195 @@
-import { createCookieSessionStorage } from "@remix-run/node";
-import { AuthenticateOptions } from "remix-auth";
-import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
-
-import { Auth0Profile, Auth0Strategy } from "../src";
-
-enableFetchMocks();
-
-const BASE_OPTIONS: AuthenticateOptions = {
-  name: "form",
-  sessionKey: "user",
-  sessionErrorKey: "error",
-  sessionStrategyKey: "strategy",
-};
-
-describe(Auth0Strategy, () => {
-  let verify = jest.fn();
-  let sessionStorage = createCookieSessionStorage({
-    cookie: { secrets: ["s3cr3t"] },
-  });
-
-  beforeEach(() => {
-    jest.resetAllMocks();
-    fetchMock.resetMocks();
-  });
-
-  test("should allow changing the scope", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-        scope: "custom",
-      },
-      verify,
-    );
-
-    let request = new Request("https://example.app/auth/auth0");
-
-    try {
-      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
-    } catch (error) {
-      if (!(error instanceof Response)) throw error;
-      let location = error.headers.get("Location");
-
-      if (!location) throw new Error("No redirect header");
-
-      let redirectUrl = new URL(location);
-
-      expect(redirectUrl.searchParams.get("scope")).toBe("custom");
-    }
-  });
-
-  test("should have the scope `openid profile email` as default", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-      },
-      verify,
-    );
-
-    let request = new Request("https://example.app/auth/auth0");
-
-    try {
-      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
-    } catch (error) {
-      if (!(error instanceof Response)) throw error;
-      let location = error.headers.get("Location");
-
-      if (!location) throw new Error("No redirect header");
-
-      let redirectUrl = new URL(location);
-
-      expect(redirectUrl.searchParams.get("scope")).toBe(
-        "openid profile email",
-      );
-    }
-  });
-
-  test("should correctly format the authorization URL", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-      },
-      verify,
-    );
-
-    let request = new Request("https://example.app/auth/auth0");
-
-    try {
-      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
-    } catch (error) {
-      if (!(error instanceof Response)) throw error;
-
-      let location = error.headers.get("Location");
-
-      if (!location) throw new Error("No redirect header");
-
-      let redirectUrl = new URL(location);
-
-      expect(redirectUrl.hostname).toBe("test.fake.auth0.com");
-      expect(redirectUrl.pathname).toBe("/authorize");
-    }
-  });
-
-  test("should allow changing the audience", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-        scope: "custom",
-        audience: "SOME_AUDIENCE",
-      },
-      verify,
-    );
-
-    let request = new Request("https://example.app/auth/auth0");
-
-    try {
-      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
-    } catch (error) {
-      if (!(error instanceof Response)) throw error;
-      let location = error.headers.get("Location");
-
-      if (!location) throw new Error("No redirect header");
-
-      let redirectUrl = new URL(location);
-
-      expect(redirectUrl.searchParams.get("audience")).toBe("SOME_AUDIENCE");
-    }
-  });
-
-  test("should allow changing the organization", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-        scope: "custom",
-        audience: "SOME_AUDIENCE",
-        organization: "SOME_ORG",
-      },
-      verify,
-    );
-
-    let request = new Request("https://example.app/auth/auth0");
-
-    try {
-      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
-    } catch (error) {
-      if (!(error instanceof Response)) throw error;
-      let location = error.headers.get("Location");
-
-      if (!location) throw new Error("No redirect header");
-
-      let redirectUrl = new URL(location);
-
-      expect(redirectUrl.searchParams.get("organization")).toBe("SOME_ORG");
-    }
-  });
-
-  test("should allow setting an invitation", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-        scope: "custom",
-        audience: "SOME_AUDIENCE",
-        organization: "SOME_ORG",
-        invitation: "SOME_INVITATION",
-      },
-      verify,
-    );
-
-    let request = new Request("https://example.app/auth/auth0");
-
-    try {
-      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
-    } catch (error) {
-      if (!(error instanceof Response)) throw error;
-      let location = error.headers.get("Location");
-
-      if (!location) throw new Error("No redirect header");
-
-      let redirectUrl = new URL(location);
-
-      expect(redirectUrl.searchParams.get("invitation")).toBe(
-        "SOME_INVITATION",
-      );
-    }
-  });
-
-  test("should allow setting the connection type", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-        scope: "custom",
-        audience: "SOME_AUDIENCE",
-        organization: "SOME_ORG",
-        connection: "email",
-      },
-      verify,
-    );
-
-    let request = new Request("https://example.app/auth/auth0");
-
-    try {
-      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
-    } catch (error) {
-      if (!(error instanceof Response)) throw error;
-      let location = error.headers.get("Location");
-
-      if (!location) throw new Error("No redirect header");
-
-      let redirectUrl = new URL(location);
-
-      expect(redirectUrl.searchParams.get("connection")).toBe("email");
-    }
-  });
-
-  test("should not fetch user profile when openid scope is not present", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-        scope: "custom",
-      },
-      verify,
-    );
-
-    let session = await sessionStorage.getSession();
-    session.set("oauth2:state", "random-state");
-
-    let request = new Request(
-      "https://example.com/callback?state=random-state&code=random-code",
-      {
-        headers: { cookie: await sessionStorage.commitSession(session) },
-      },
-    );
-
-    fetchMock.once(
-      JSON.stringify({
-        access_token: "access token",
-        scope: "custom",
-        expires_in: 86_400,
-        token_type: "Bearer",
-      }),
-    );
-
-    let context = { test: "some context" };
-
-    await strategy.authenticate(request, sessionStorage, {
-      ...BASE_OPTIONS,
-      context,
-    });
-
-    expect(verify).toHaveBeenLastCalledWith({
-      accessToken: "access token",
-      refreshToken: undefined,
-      request,
-      extraParams: {
-        scope: "custom",
-        expires_in: 86_400,
-        token_type: "Bearer",
-      },
-      profile: {
-        provider: "auth0",
-      },
-      context,
-    });
-  });
-
-  test("should fetch minimal user profile when only openid scope is present", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-        scope: "openid",
-      },
-      verify,
-    );
-
-    let session = await sessionStorage.getSession();
-    session.set("oauth2:state", "random-state");
-
-    let request = new Request(
-      "https://example.com/callback?state=random-state&code=random-code",
-      {
-        headers: { cookie: await sessionStorage.commitSession(session) },
-      },
-    );
-
-    let userInfo: Auth0Profile["_json"] = {
-      sub: "subject",
-    };
-
-    fetchMock
-      .once(
-        JSON.stringify({
-          access_token: "access token",
-          id_token: "id token",
-          scope: "openid",
-          expires_in: 86_400,
-          token_type: "Bearer",
-        }),
-      )
-      .once(JSON.stringify(userInfo));
-
-    let context = { test: "some context" };
-
-    await strategy.authenticate(request, sessionStorage, {
-      ...BASE_OPTIONS,
-      context,
-    });
-
-    const profile: Auth0Profile = {
-      provider: "auth0",
-      _json: userInfo,
-      id: "subject",
-    };
-
-    expect(verify).toHaveBeenLastCalledWith({
-      accessToken: "access token",
-      refreshToken: undefined,
-      request,
-      extraParams: {
-        id_token: "id token",
-        scope: "openid",
-        expires_in: 86_400,
-        token_type: "Bearer",
-      },
-      profile,
-      context,
-    });
-  });
-
-  test("should fetch full user profile when openid, profile, and email scopes are present", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-        scope: "openid profile email",
-      },
-      verify,
-    );
-
-    let session = await sessionStorage.getSession();
-    session.set("oauth2:state", "random-state");
-
-    let request = new Request(
-      "https://example.com/callback?state=random-state&code=random-code",
-      {
-        headers: { cookie: await sessionStorage.commitSession(session) },
-      },
-    );
-
-    let userInfo: Auth0Profile["_json"] = {
-      sub: "248289761001",
-      name: "Jane Josephine Doe",
-      given_name: "Jane",
-      family_name: "Doe",
-      middle_name: "Josephine",
-      nickname: "JJ",
-      preferred_username: "j.doe",
-      profile: "http://exampleco.com/janedoe",
-      picture: "http://exampleco.com/janedoe/me.jpg",
-      website: "http://exampleco.com",
-      email: "janedoe@exampleco.com",
-      email_verified: true,
-      gender: "female",
-      birthdate: "1972-03-31",
-      zoneinfo: "America/Los_Angeles",
-      locale: "en-US",
-      phone_number: "+1 (111) 222-3434",
-      phone_number_verified: false,
-      org_id: "some-auth0-organization-id",
-      org_name: "some-auth0-organization-name",
-      address: {
-        country: "us",
-      },
-      updated_at: "1556845729",
-    };
-
-    fetchMock
-      .once(
-        JSON.stringify({
-          access_token: "access token",
-          id_token: "id token",
-          scope: "openid profile email",
-          expires_in: 86_400,
-          token_type: "Bearer",
-        }),
-      )
-      .once(JSON.stringify(userInfo));
-
-    let context = { test: "some context" };
-
-    await strategy.authenticate(request, sessionStorage, {
-      ...BASE_OPTIONS,
-      context,
-    });
-
-    const profile: Auth0Profile = {
-      provider: "auth0",
-      _json: userInfo,
-      id: "248289761001",
-      displayName: "Jane Josephine Doe",
-      name: {
-        familyName: "Doe",
-        givenName: "Jane",
-        middleName: "Josephine",
-      },
-      emails: [{ value: "janedoe@exampleco.com" }],
-      photos: [{ value: "http://exampleco.com/janedoe/me.jpg" }],
-      organizationId: "some-auth0-organization-id",
-      organizationName: "some-auth0-organization-name",
-    };
-
-    expect(verify).toHaveBeenLastCalledWith({
-      accessToken: "access token",
-      refreshToken: undefined,
-      request,
-      extraParams: {
-        id_token: "id token",
-        scope: "openid profile email",
-        expires_in: 86_400,
-        token_type: "Bearer",
-      },
-      profile,
-      context,
-    });
-  });
-
-  test("should allow additional search params", async () => {
-    let strategy = new Auth0Strategy(
-      {
-        domain: "test.fake.auth0.com",
-        clientID: "CLIENT_ID",
-        clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
-      },
-      verify,
-    );
-
-    let request = new Request("https://example.app/auth/auth0?test=1");
-    try {
-      await strategy.authenticate(request, sessionStorage, BASE_OPTIONS);
-    } catch (error) {
-      if (!(error instanceof Response)) throw error;
-      let location = error.headers.get("Location");
-
-      if (!location) throw new Error("No redirect header");
-
-      let redirectUrl = new URL(location);
-
-      expect(redirectUrl.searchParams.get("test")).toBe("1");
-    }
-  });
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	describe,
+	expect,
+	mock,
+	test,
+} from "bun:test";
+import { Cookie, SetCookie } from "@mjackson/headers";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/native";
+
+import { Auth0Strategy } from "../src/index.js";
+import { StateStore } from "../src/lib/store.js";
+import { catchResponse, random } from "./helpers/index.js";
+
+const server = setupServer(
+	http.post("https://xxx.auth0.com/oauth/token", async () => {
+		return HttpResponse.json({
+			access_token: "mocked",
+			expires_in: 3600,
+			refresh_token: "mocked",
+			scope: ["openid", "profile"].join(" "),
+			token_type: "Bearer",
+		});
+	}),
+);
+
+describe(Auth0Strategy.name, () => {
+	let verify = mock();
+
+	let options = Object.freeze({
+		domain: "xxx.auth0.com",
+		clientId: "MY_CLIENT_ID",
+		clientSecret: "MY_CLIENT_SECRET",
+		redirectURI: "https://example.com/callback",
+		scopes: ["openid", "profile"],
+	} satisfies Auth0Strategy.ConstructorOptions);
+
+	interface User {
+		id: string;
+	}
+
+	beforeAll(() => {
+		server.listen();
+	});
+
+	afterEach(() => {
+		server.resetHandlers();
+	});
+
+	afterAll(() => {
+		server.close();
+	});
+
+	test("should have the name `auth0`", () => {
+		let strategy = new Auth0Strategy<User>(options, verify);
+		expect(strategy.name).toBe("auth0");
+	});
+
+	test("redirects to authorization url if there's no state", async () => {
+		let strategy = new Auth0Strategy<User>(options, verify);
+
+		let request = new Request("https://remix.auth/login");
+
+		let response = await catchResponse(strategy.authenticate(request));
+
+		// biome-ignore lint/style/noNonNullAssertion: This is a test
+		let redirect = new URL(response.headers.get("location")!);
+
+		let setCookie = new SetCookie(response.headers.get("set-cookie") ?? "");
+		let params = new URLSearchParams(setCookie.value);
+
+		expect(redirect.pathname).toBe("/authorize");
+		expect(redirect.searchParams.get("response_type")).toBe("code");
+		expect(redirect.searchParams.get("client_id")).toBe(options.clientId);
+		expect(redirect.searchParams.get("redirect_uri")).toBe(options.redirectURI);
+		expect(redirect.searchParams.has("state")).toBeTruthy();
+		expect(redirect.searchParams.get("scope")).toBe(options.scopes.join(" "));
+		expect(params.get("state")).toBe(redirect.searchParams.get("state"));
+		expect(redirect.searchParams.get("code_challenge_method")).toBe("S256");
+	});
+
+	test("throws if there's no state in the session", async () => {
+		let strategy = new Auth0Strategy<User>(options, verify);
+
+		let request = new Request(
+			"https://example.com/callback?state=random-state&code=random-code",
+		);
+
+		expect(strategy.authenticate(request)).rejects.toThrowError(
+			new ReferenceError("Missing state on cookie."),
+		);
+	});
+
+	test("throws if the state in the url doesn't match the state in the session", async () => {
+		let strategy = new Auth0Strategy<User>(options, verify);
+
+		let store = new StateStore();
+		store.set("random-state", "random-code-verifier");
+
+		let cookie = new Cookie();
+		cookie.set("polar", store.toString());
+
+		let request = new Request(
+			"https://example.com/callback?state=another-state&code=random-code",
+			{ headers: { Cookie: cookie.toString() } },
+		);
+
+		expect(strategy.authenticate(request)).rejects.toThrowError(
+			new ReferenceError("Missing state on cookie."),
+		);
+	});
+
+	test("calls verify with the tokens and request", async () => {
+		let strategy = new Auth0Strategy<User>(options, verify);
+
+		let store = new StateStore();
+		store.set("random-state", "random-code-verifier");
+
+		let cookie = new Cookie();
+		cookie.set(store.toSetCookie()?.name as string, store.toString());
+
+		let request = new Request(
+			"https://example.com/callback?state=random-state&code=random-code",
+			{ headers: { cookie: cookie.toString() } },
+		);
+
+		await strategy.authenticate(request);
+
+		expect(verify).toHaveBeenCalled();
+	});
+
+	test("returns the result of verify", () => {
+		let user = { id: "123" };
+		verify.mockResolvedValueOnce(user);
+
+		let strategy = new Auth0Strategy<User>(options, verify);
+
+		let store = new StateStore();
+		store.set("random-state", "random-code-verifier");
+
+		let cookie = new Cookie();
+		cookie.set(store.toSetCookie()?.name as string, store.toString());
+
+		let request = new Request(
+			"https://example.com/callback?state=random-state&code=random-code",
+			{ headers: { cookie: cookie.toString() } },
+		);
+
+		expect(strategy.authenticate(request)).resolves.toEqual(user);
+	});
+
+	test("handles race condition of state and code verifier", async () => {
+		let verify = mock().mockImplementation(() => ({ id: "123" }));
+		let strategy = new Auth0Strategy<User>(options, verify);
+
+		let responses = await Promise.all(
+			Array.from({ length: random() }, () =>
+				catchResponse(
+					strategy.authenticate(new Request("https://remix.auth/login")),
+				),
+			),
+		);
+
+		let setCookies: SetCookie[] = responses
+			.flatMap((res) => res.headers.getSetCookie())
+			.map((header) => new SetCookie(header));
+
+		let cookie = new Cookie();
+
+		for (let setCookie of setCookies) {
+			cookie.set(setCookie.name as string, setCookie.value as string);
+		}
+
+		let urls = setCookies.map((setCookie) => {
+			let params = new URLSearchParams(setCookie.value);
+			let url = new URL("https://remix.auth/callback");
+			url.searchParams.set("state", params.get("state") as string);
+			url.searchParams.set("code", crypto.randomUUID());
+			return url;
+		});
+
+		await Promise.all(
+			urls.map((url) =>
+				strategy.authenticate(
+					new Request(url, { headers: { cookie: cookie.toString() } }),
+				),
+			),
+		);
+
+		expect(verify).toHaveBeenCalledTimes(responses.length);
+	});
 });
