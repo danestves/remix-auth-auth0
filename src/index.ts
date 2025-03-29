@@ -31,6 +31,7 @@ export class Auth0Strategy<User> extends Strategy<
 	name = "auth0";
 
 	protected client: Auth0;
+	protected organization: string;
 
 	constructor(
 		protected options: Auth0Strategy.ConstructorOptions,
@@ -44,6 +45,8 @@ export class Auth0Strategy<User> extends Strategy<
 			options.clientSecret,
 			options.redirectURI.toString(),
 		);
+
+		this.organization = options.organization;
 	}
 
 	private get cookieName() {
@@ -165,12 +168,15 @@ export class Auth0Strategy<User> extends Strategy<
 
 		// Forward organization parameter if present
 		const organization = url.searchParams.get("organization");
+		const invitation = url.searchParams.get("invitation");
+
 		if (organization) {
 			newParams.set("organization", organization);
+		} else if (this.organization && !invitation) {
+			newParams.set("organization", this.organization);
 		}
 
 		// Forward invitation parameter if present
-		const invitation = url.searchParams.get("invitation");
 		if (invitation) {
 			newParams.set("invitation", invitation);
 		}
@@ -261,6 +267,12 @@ export namespace Auth0Strategy {
 		 * user.
 		 */
 		scopes?: Scope[];
+
+		/**
+		 * The organization to log the user in as a member of. If not provided, then
+		 * Auth0's organization functionality is not used.
+		 */
+		organization?: string;
 	}
 
 	/**
