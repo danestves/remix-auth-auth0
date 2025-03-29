@@ -31,7 +31,7 @@ export class Auth0Strategy<User> extends Strategy<
 	name = "auth0";
 
 	protected client: Auth0;
-	protected organization: string;
+	protected organization: string | undefined;
 
 	constructor(
 		protected options: Auth0Strategy.ConstructorOptions,

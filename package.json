@@ -21,11 +21,7 @@
 		".": "./build/index.js",
 		"./package.json": "./package.json"
 	},
-	"files": [
-		"build",
-		"package.json",
-		"README.md"
-	],
+	"files": ["build", "package.json", "README.md"],
 	"scripts": {
 		"build": "tsc",
 		"exports": "bun run ./scripts/exports.ts",
