@@ -40,7 +40,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@total-typescript/tsconfig": "1.0.4",
-		"@types/bun": "1.2.5",
+		"@types/bun": "1.2.8",
 		"@types/debug": "4.1.12",
 		"debug": "4.4.0",
 		"msw": "2.7.3",
