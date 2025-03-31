@@ -5,7 +5,7 @@
       "name": "remix-auth-auth0",
       "dependencies": {
         "@mjackson/headers": "0.10.0",
-        "arctic": "3.5.0",
+        "arctic": "3.6.0",
       },
       "devDependencies": {
         "@biomejs/biome": "1.9.4",
@@ -112,7 +112,7 @@
 
     "ansi-styles": ["ansi-styles@4.3.0", "", { "dependencies": { "color-convert": "^2.0.1" } }, "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg=="],
 
-    "arctic": ["arctic@3.5.0", "", { "dependencies": { "@oslojs/crypto": "1.0.1", "@oslojs/encoding": "1.1.0", "@oslojs/jwt": "0.2.0" } }, "sha512-SR2BnMinzA5X4qsMR5wFMqELeKfMKNAThpRJyuPFJpCZIqvAMW0VbVSacycgIBV56XQLCLtUMwdohKEMaR2y1g=="],
+    "arctic": ["arctic@3.6.0", "", { "dependencies": { "@oslojs/crypto": "1.0.1", "@oslojs/encoding": "1.1.0", "@oslojs/jwt": "0.2.0" } }, "sha512-egHDsCqEacb6oSHz5QSSxNhp07J+QJwJdPvs0katL+mNM5LaGQVqxmcdq1KwfaSNSAlVumBBs0MRExS88TxbMg=="],
 
     "argparse": ["argparse@2.0.1", "", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 
