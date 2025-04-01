@@ -54,6 +54,25 @@ describe(Auth0Strategy.name, () => {
 		server.close();
 	});
 
+	test("handles organization invitation parameters", async () => {
+		let strategy = new Auth0Strategy<User>(options, verify);
+
+		let orgParam = "org_123";
+		let invitationParam = "inv_456";
+
+		let request = new Request(
+			`https://remix.auth/login?organization=${orgParam}&invitation=${invitationParam}`,
+		);
+
+		let response = await catchResponse(strategy.authenticate(request));
+
+		// biome-ignore lint/style/noNonNullAssertion: This is a test
+		let redirect = new URL(response.headers.get("location")!);
+
+		expect(redirect.searchParams.get("organization")).toBe(orgParam);
+		expect(redirect.searchParams.get("invitation")).toBe(invitationParam);
+	});
+
 	test("should have the name `auth0`", () => {
 		let strategy = new Auth0Strategy<User>(options, verify);
 		expect(strategy.name).toBe("auth0");
