@@ -35,13 +35,12 @@
 	},
 	"dependencies": {
 		"@mjackson/headers": "0.10.0",
-		"arctic": "3.5.0",
-		"debug": "4.4.0"
+		"arctic": "3.6.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@total-typescript/tsconfig": "1.0.4",
-		"@types/bun": "1.2.5",
+		"@types/bun": "1.2.8",
 		"@types/debug": "4.1.12",
 		"msw": "2.7.3",
 		"typedoc": "0.28.1",

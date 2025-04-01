@@ -1,7 +1,8 @@
 {
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	"formatter": {
-		"enabled": true
+		"enabled": true,
+		"ignore": ["package.json"]
 	},
 	"linter": {
 		"enabled": true,
@@ -26,7 +27,8 @@
 				"noEmptyBlockStatements": "warn",
 				"noSkippedTests": "error"
 			}
-		}
+		},
+		"ignore": ["package.json"]
 	},
 	"organizeImports": {
 		"enabled": true

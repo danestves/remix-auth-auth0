@@ -160,7 +160,22 @@ export class Auth0Strategy<User> extends Strategy<
 		params: URLSearchParams,
 		request: Request,
 	): URLSearchParams {
-		return new URLSearchParams(params);
+		const newParams = new URLSearchParams(params);
+		const url = new URL(request.url);
+
+		// Forward organization parameter if present
+		const organization = url.searchParams.get("organization");
+		if (organization) {
+			newParams.set("organization", organization);
+		}
+
+		// Forward invitation parameter if present
+		const invitation = url.searchParams.get("invitation");
+		if (invitation) {
+			newParams.set("invitation", invitation);
+		}
+
+		return newParams;
 	}
 
 	/**
