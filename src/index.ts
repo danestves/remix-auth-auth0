@@ -31,13 +31,15 @@ export class Auth0Strategy<User> extends Strategy<
 	name = "auth0";
 
 	protected client: Auth0;
-	protected organization: string | undefined;
+	protected organization?: string;
+	protected audience?: string;
 
 	constructor(
 		protected options: Auth0Strategy.ConstructorOptions,
 		verify: Strategy.VerifyFunction<User, Auth0Strategy.VerifyOptions>,
 	) {
 		super(verify);
+		debug("Constructor options", options);
 
 		this.client = new Auth0(
 			options.domain,
@@ -47,6 +49,7 @@ export class Auth0Strategy<User> extends Strategy<
 		);
 
 		this.organization = options.organization;
+		this.audience = options.audience;
 	}
 
 	private get cookieName() {
@@ -166,19 +169,26 @@ export class Auth0Strategy<User> extends Strategy<
 		const newParams = new URLSearchParams(params);
 		const url = new URL(request.url);
 
-		// Forward organization parameter if present
 		const organization = url.searchParams.get("organization");
 		const invitation = url.searchParams.get("invitation");
-
-		if (organization) {
-			newParams.set("organization", organization);
-		} else if (this.organization && !invitation) {
-			newParams.set("organization", this.organization);
-		}
 
 		// Forward invitation parameter if present
 		if (invitation) {
 			newParams.set("invitation", invitation);
+			// Forward organization parameter if present - use the organization from the invitation.
+			if (organization) {
+				newParams.set("organization", organization);
+			}
+		} else {
+			// Forward organization from constructor if provided.
+			if (this.organization) {
+				newParams.set("organization", this.organization);
+			}
+
+			// Forward audience from constructor if provided.
+			if (this.audience) {
+				newParams.set("audience", this.audience);
+			}
 		}
 
 		return newParams;
@@ -267,6 +277,12 @@ export namespace Auth0Strategy {
 		 * user.
 		 */
 		scopes?: Scope[];
+
+		/**
+		 * The unique identifier of the API to request access credentials for. If not provided, then
+		 * Auth0 will return a token that can only access Auth0's authentication API.
+		 */
+		audience?: string;
 
 		/**
 		 * The organization to log the user in as a member of. If not provided, then
