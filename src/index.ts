@@ -32,7 +32,7 @@ export class Auth0Strategy<User> extends Strategy<
 
 	protected client: Auth0;
 	protected organization?: string;
-	protected audience?: string;
+	protected audience?: string | string[];
 
 	constructor(
 		protected options: Auth0Strategy.ConstructorOptions,
@@ -187,7 +187,13 @@ export class Auth0Strategy<User> extends Strategy<
 
 			// Forward audience from constructor if provided.
 			if (this.audience) {
-				newParams.set("audience", this.audience);
+				if (Array.isArray(this.audience)) {
+					for (const audience of this.audience) {
+						newParams.append("audience", audience);
+					}
+				} else {
+					newParams.append("audience", this.audience);
+				}
 			}
 		}
 
@@ -279,10 +285,10 @@ export namespace Auth0Strategy {
 		scopes?: Scope[];
 
 		/**
-		 * The unique identifier of the API to request access credentials for. If not provided, then
+		 * The unique identifier(s) of the API to request access credentials for. If not provided, then
 		 * Auth0 will return a token that can only access Auth0's authentication API.
 		 */
-		audience?: string;
+		audience?: string | string[];
 
 		/**
 		 * The organization to log the user in as a member of. If not provided, then
