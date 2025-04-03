@@ -36,6 +36,26 @@ describe(Auth0Strategy.name, () => {
 		clientSecret: "MY_CLIENT_SECRET",
 		redirectURI: "https://example.com/callback",
 		scopes: ["openid", "profile"],
+		audience: "https://api.example.com",
+	} satisfies Auth0Strategy.ConstructorOptions);
+
+	let orgOptions = Object.freeze({
+		domain: "xxx.auth0.com",
+		clientId: "MY_CLIENT_ID",
+		clientSecret: "MY_CLIENT_SECRET",
+		redirectURI: "https://example.com/callback",
+		scopes: ["openid", "profile"],
+		organization: "testorg",
+	} satisfies Auth0Strategy.ConstructorOptions);
+
+	let multiAudienceOptions = Object.freeze({
+		domain: "xxx.auth0.com",
+		clientId: "MY_CLIENT_ID",
+		clientSecret: "MY_CLIENT_SECRET",
+		redirectURI: "https://example.com/callback",
+		scopes: ["openid", "profile"],
+		organization: "testorg",
+		audience: ["https://api.example.com", "https://api2.example.com"],
 	} satisfies Auth0Strategy.ConstructorOptions);
 
 	interface User {
@@ -73,6 +93,26 @@ describe(Auth0Strategy.name, () => {
 		expect(redirect.searchParams.get("invitation")).toBe(invitationParam);
 	});
 
+	test("handles organization invitation parameters with organization", async () => {
+		let strategy = new Auth0Strategy<User>(orgOptions, verify);
+
+		let orgParam = "org_123";
+		let invitationParam = "inv_456";
+
+		let request = new Request(
+			`https://remix.auth/login?organization=${orgParam}&invitation=${invitationParam}`,
+		);
+
+		let response = await catchResponse(strategy.authenticate(request));
+
+		// biome-ignore lint/style/noNonNullAssertion: This is a test
+		let redirect = new URL(response.headers.get("location")!);
+
+		// ensure we get the organization we sent as part of the invitation back, rather than the org set on the options
+		expect(redirect.searchParams.get("organization")).toBe(orgParam);
+		expect(redirect.searchParams.get("invitation")).toBe(invitationParam);
+	});
+
 	test("should have the name `auth0`", () => {
 		let strategy = new Auth0Strategy<User>(options, verify);
 		expect(strategy.name).toBe("auth0");
@@ -95,8 +135,72 @@ describe(Auth0Strategy.name, () => {
 		expect(redirect.searchParams.get("response_type")).toBe("code");
 		expect(redirect.searchParams.get("client_id")).toBe(options.clientId);
 		expect(redirect.searchParams.get("redirect_uri")).toBe(options.redirectURI);
+		expect(redirect.searchParams.has("organization")).toBeFalsy();
 		expect(redirect.searchParams.has("state")).toBeTruthy();
 		expect(redirect.searchParams.get("scope")).toBe(options.scopes.join(" "));
+		expect(redirect.searchParams.get("audience")).toBe(options.audience);
+		expect(params.get("state")).toBe(redirect.searchParams.get("state"));
+		expect(redirect.searchParams.get("code_challenge_method")).toBe("S256");
+	});
+
+	test("redirects to authorization url if there's no state with organization", async () => {
+		let strategy = new Auth0Strategy<User>(orgOptions, verify);
+
+		let request = new Request("https://remix.auth/login");
+
+		let response = await catchResponse(strategy.authenticate(request));
+
+		// biome-ignore lint/style/noNonNullAssertion: This is a test
+		let redirect = new URL(response.headers.get("location")!);
+
+		let setCookie = new SetCookie(response.headers.get("set-cookie") ?? "");
+		let params = new URLSearchParams(setCookie.value);
+
+		expect(redirect.pathname).toBe("/authorize");
+		expect(redirect.searchParams.get("response_type")).toBe("code");
+		expect(redirect.searchParams.get("client_id")).toBe(orgOptions.clientId);
+		expect(redirect.searchParams.get("redirect_uri")).toBe(
+			orgOptions.redirectURI,
+		);
+		expect(redirect.searchParams.get("organization")).toBe(
+			orgOptions.organization,
+		);
+		expect(redirect.searchParams.has("state")).toBeTruthy();
+		expect(redirect.searchParams.get("scope")).toBe(
+			orgOptions.scopes.join(" "),
+		);
+		expect(params.get("state")).toBe(redirect.searchParams.get("state"));
+		expect(redirect.searchParams.get("code_challenge_method")).toBe("S256");
+	});
+
+	test("redirects to authorization url if there's no state with multiple audiences", async () => {
+		let strategy = new Auth0Strategy<User>(multiAudienceOptions, verify);
+
+		let request = new Request("https://remix.auth/login");
+
+		let response = await catchResponse(strategy.authenticate(request));
+
+		// biome-ignore lint/style/noNonNullAssertion: This is a test
+		let redirect = new URL(response.headers.get("location")!);
+
+		let setCookie = new SetCookie(response.headers.get("set-cookie") ?? "");
+		let params = new URLSearchParams(setCookie.value);
+
+		expect(redirect.pathname).toBe("/authorize");
+		expect(redirect.searchParams.get("response_type")).toBe("code");
+		expect(redirect.searchParams.get("client_id")).toBe(
+			multiAudienceOptions.clientId,
+		);
+		expect(redirect.searchParams.get("redirect_uri")).toBe(
+			multiAudienceOptions.redirectURI,
+		);
+		expect(redirect.searchParams.has("state")).toBeTruthy();
+		expect(redirect.searchParams.get("scope")).toBe(
+			multiAudienceOptions.scopes.join(" "),
+		);
+		expect(multiAudienceOptions.audience).toContain(
+			redirect.searchParams.get("audience"),
+		);
 		expect(params.get("state")).toBe(redirect.searchParams.get("state"));
 		expect(redirect.searchParams.get("code_challenge_method")).toBe("S256");
 	});
