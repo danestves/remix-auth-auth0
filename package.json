@@ -44,7 +44,7 @@
 		"@types/bun": "1.2.8",
 		"@types/debug": "4.1.12",
 		"msw": "2.7.3",
-		"typedoc": "0.28.1",
+		"typedoc": "0.28.2",
 		"typedoc-plugin-mdn-links": "5.0.1",
 		"typescript": "5.8.3"
 	},
