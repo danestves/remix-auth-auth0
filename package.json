@@ -35,7 +35,7 @@
 	},
 	"dependencies": {
 		"@mjackson/headers": "0.10.0",
-		"arctic": "3.6.1",
+		"arctic": "3.7.0",
 		"debug": "4.4.1"
 	},
 	"devDependencies": {
