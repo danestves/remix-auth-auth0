@@ -34,7 +34,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@mjackson/headers": "0.10.0",
+		"@mjackson/headers": "0.11.1",
 		"arctic": "3.7.0",
 		"debug": "4.4.1"
 	},
