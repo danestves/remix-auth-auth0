@@ -41,7 +41,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.0.6",
 		"@total-typescript/tsconfig": "1.0.4",
-		"@types/bun": "1.2.17",
+		"@types/bun": "1.2.18",
 		"@types/debug": "4.1.12",
 		"msw": "2.10.2",
 		"typedoc": "0.28.7",
