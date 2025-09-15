@@ -36,7 +36,7 @@
 	"dependencies": {
 		"@mjackson/headers": "0.11.1",
 		"arctic": "3.7.0",
-		"debug": "4.4.1"
+		"debug": "4.4.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.4",
