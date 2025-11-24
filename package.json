@@ -43,7 +43,7 @@
 		"@total-typescript/tsconfig": "1.0.4",
 		"@types/bun": "1.3.2",
 		"@types/debug": "4.1.12",
-		"msw": "2.12.2",
+		"msw": "2.12.3",
 		"typedoc": "0.28.12",
 		"typedoc-plugin-mdn-links": "5.0.10",
 		"typescript": "5.9.3"
