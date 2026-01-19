@@ -45,7 +45,7 @@
 		"@types/debug": "4.1.12",
 		"msw": "2.12.7",
 		"typedoc": "0.28.16",
-		"typedoc-plugin-mdn-links": "5.0.10",
+		"typedoc-plugin-mdn-links": "5.1.0",
 		"typescript": "5.9.3"
 	},
 	"peerDependencies": {
