@@ -46,7 +46,7 @@
 		"msw": "2.13.0",
 		"typedoc": "0.28.19",
 		"typedoc-plugin-mdn-links": "5.1.1",
-		"typescript": "5.9.3"
+		"typescript": "6.0.2"
 	},
 	"peerDependencies": {
 		"remix-auth": "^4.0.0"
